@@ -1,0 +1,111 @@
+schema_version: "1.0"
+name: riego
+version: 1.0.0
+publisher: agromeda
+display_name:
+  es: Riego
+  en: Irrigation
+description:
+  es: Calcula láminas, cédulas de riego y monitorea la eficiencia hídrica.
+  en: Compute irrigation depths, schedules, and water-use efficiency.
+long_description_path: README.md
+icon: assets/icon.png
+license: Proprietary
+homepage_url: https://agromeda.web.app/extensions/riego
+repository_url: https://github.com/Agromeda/extensions-official-riego
+bugs_url: https://github.com/Agromeda/extensions-official-riego/issues
+
+categories:
+  - irrigation
+  - precision_tech
+
+applies_to:
+  systems:
+    - field_extensive_rainfed
+    - field_row_crop_drip
+    - field_row_crop_pivot
+    - field_row_crop_sprinkler
+    - field_row_crop_surface
+    - protected_greenhouse
+    - protected_shadehouse
+    - hydroponics_nft
+    - hydroponics_dwc
+    - hydroponics_substrate
+    - vertical_farm
+    - aquaponics
+
+min_app_version: "2.0.0"
+target_size_kb_max: 1024
+
+permissions:
+  - read:active_parcel
+  - read:weather
+  - read:satellite
+  - read:milpa_history
+  - write:parcel_meta
+  - write:activity_log
+  - write:notifications
+  - ai_edit:invoke
+  - ai_chat:context
+  - storage:local
+
+pricing:
+  model: freemium
+  tier_required: Free
+
+contributes:
+  sidebar_entries:
+    - id: riego_main
+      label: { es: Riego, en: Irrigation }
+      icon: water_drop_rounded
+      route: /riego
+      category: irrigation
+      order: 10
+  screens:
+    - id: riego_home
+      route: /riego
+      runtime: declarative
+      entry: ui/home.yaml
+      title: { es: Riego, en: Irrigation }
+    - id: riego_cedula
+      route: /riego/cedula/:parcelId
+      runtime: declarative
+      entry: ui/cedula.yaml
+    - id: riego_eficiencia
+      route: /riego/eficiencia/:parcelId
+      runtime: declarative
+      entry: ui/eficiencia.yaml
+  milpa_topics:
+    - knowledge/riego-base.milpa-pack.yaml
+    - knowledge/riego-fenologia.milpa-pack.yaml
+  ai_edit_handlers:
+    - action_key: parcel.irrigation.system.set
+      label: { es: Cambiar sistema de riego, en: Change irrigation system }
+      category: parcel_setup
+      fields:
+        - { name: parcel_id, type: parcel_id, required: true }
+        - name: system_type
+          type: enum
+          required: true
+          enum_values: [drip, pivot, sprinkler, surface, micro_sprinkler]
+    - action_key: parcel.irrigation.event.record
+      label: { es: Registrar riego, en: Record irrigation event }
+      category: activity_log
+      fields:
+        - { name: parcel_id, type: parcel_id, required: true }
+        - { name: applied_mm, type: number, required: true }
+        - { name: started_at, type: date, required: true }
+  automation_nodes:
+    - id: trigger_low_moisture
+      kind: trigger
+      label: { es: Humedad de suelo baja, en: Soil moisture low }
+      entry: flows/trigger_low_moisture.n8n.json
+    - id: action_open_valve
+      kind: action
+      label: { es: Abrir válvula, en: Open valve }
+      entry: flows/action_open_valve.n8n.json
+  dashboard_widgets:
+    - id: riego_kpi
+      slot: home_overview
+      runtime: declarative
+      entry: ui/widget_kpi.yaml
